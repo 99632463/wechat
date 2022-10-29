@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    .logo {
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-align: center;
+      font-size: 18px;
+      color: #f00;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="logo">欢迎来到 xxxxx 官网</h2>
+  <div id="userInfo">
+    <p>昵称: <%= userInfo.nickname %></p>
+    <p>性别: <%= userInfo.sex %></p>
+    <p>语言: <%= userInfo.language %></p>
+    <p>城市: <%= userInfo.city %></p>
+    <p>省份: <%= userInfo.province %></p>
+    <p>国家: <%= userInfo.country %></p>
+    <p>
+      图像: <img width="40" height="40" src="<%= userInfo.headimgurl %>" alt="">
+    </p>
+  </div>
+  <hr><br>
+  <div>
+    <p>
+      <button ontouchstart="chooseImage()">上传图片</button> &nbsp;点我上传
+    </p>
+  </div>
+  <div id="imgsArea">
+    <img src="" alt="">
+  </div>
+  <div>
+    <button ontouchstart='openLocation()'>位置</button>
+    <button ontouchstart='closeWindow()'>关闭窗口</button>
+  </div>
+
+  <script src="https://cdn.bootcss.com/js-sha1/0.6.0/sha1.min.js"></script>
+  <script src="http://res2.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+
+  <script>
+    class Jssdk {
+      constructor(config = {}) {
+        const { appID = '', timestamp = 0, nonceStr = '', jsapi_ticket = '', url = '', closeDebug, jsApiList = [] } = config;
+
+        this.appID = appID;
+        this.timestamp = timestamp;
+        this.nonceStr = nonceStr;
+        this.jsapi_ticket = jsapi_ticket;
+        this.url = url;
+        this.closeDebug = closeDebug;
+        this.jsApiList = jsApiList;
+      }
+
+      getSha1Signature() {
+        const signature = `jsapi_ticket=${this.jsapi_ticket}&noncestr=${this.nonceStr}&timestamp=${this.timestamp}&url=${this.url}`;
+        return sha1(signature);
+      }
+
+      config() {
+        wx.config({
+          debug: !this.closeDebug,
+          appId: this.appID,
+          timestamp: this.timestamp,
+          nonceStr: this.nonceStr,
+          signature: this.getSha1Signature(),
+          jsApiList: this.jsApiList
+        });
+      }
+    }
+
+    const jssdk = new Jssdk({
+      closeDebug: true,
+      appID: '<%= appID %>',
+      timestamp: Math.floor(Date.now() / 1000),
+      nonceStr: 'Wm3WZ',
+      jsapi_ticket: '<%= jsapi_ticket %>',
+      url: location.href.split('#')[0],
+      jsApiList: [
+        'chooseImage',
+        'getLocation',
+        'openLocation',
+        'closeWindow',
+        'updateAppMessageShareData',
+        'updateTimelineShareData'
+      ]
+    }).config();
+
+    const chooseImage = () => {
+      const imgsArea = document.getElementById('imgsArea');
+
+      wx.chooseImage({
+        success: res => {
+          const imgs = (res.localIds || []).reduce((prev, imgPath) => {
+            prev += `<img src=${imgPath} width='100' height='100'/>`;
+            return prev;
+          }, '')
+
+          imgsArea.innerHTML = imgs;
+        }
+      });
+    }
+
+    const openLocation = () => {
+      wx.getLocation({
+        type: 'gcj02',
+        success: res => {
+          const { latitude, longitude } = res;
+
+          wx.openLocation({
+            latitude: latitude || '',
+            longitude: longitude || '',
+            name: '我的位置',
+            address: 'xxxxx',
+            scale: 14
+          });
+        }
+      });
+    }
+
+    const closeWindow = () => {
+      wx.closeWindow();
+    }
+
+    wx.ready(() => {
+      wx.updateAppMessageShareData({
+        title: 'html',
+        desc: 'very good',
+        link: 'xxxxx',
+        imgUrl: '',
+      });
+
+      wx.updateTimelineShareData({
+        title: '我是王凯',
+        link: 'xxxx',
+        imgUrl: ''
+      })
+    })
+  </script>
+</body>
+
+</html>
